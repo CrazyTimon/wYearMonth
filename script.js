@@ -16,39 +16,55 @@ $(function() {
         },
         keyup: function(e){
             var keyCode = e.keyCode || e.which,
-                isMonth,
-                isYear,
                 startPos = this.getCarretPosition(this.el).start,
+                isYear = startPos == 1 || startPos == 2;
+                isMonth = startPos == 6 || startPos == 7;
                 result = false;
-            if(
+                console.log(keyCode);
+            debugger;
+            if(//arrow keys
                     keyCode == 37||
                     keyCode == 38||
                     keyCode == 39||
                     keyCode == 40
               ){
                 result =  this.keyArrow(e);
-            } else if( /^\d$/g.test(String.fromCharCode(keyCode)) ){
-                isYear = startPos == 1 ||
-                          startPos == 2;
-                isMonth = startPos == 6 ||
-                          startPos == 7;
-
+            } else if(keyCode == 8){//backspace
+                if(startPos === 0||
+                   startPos === 1||
+                   startPos === 5||
+                   startPos === 6){
+                    this.el.value = this.el.value.substring(0, startPos) +
+                                    '_' +
+                                    this.el.value.substring(startPos, this.el.value.length);
+                    this.previosValue.value = this.el.value; 
+                } else {
+                    this.el.value = this.previosValue.value;
+                }
+                this.setCaretPosition(this.el, startPos+1);
+            } else if( /^\d$/g.test(String.fromCharCode(keyCode)) && ( isMonth || isYear ) ){//digital char
                 this.applyPlaceHolder(isMonth, isYear, keyCode);
                 this.setCaretPosition(this.el, startPos);
-            } else {
                 this.setPreviosState();
+            } else {
+                this.el.value = this.previosValue.value;
                 this.setCaretPosition(this.el, startPos-1);
             }
         },
+        previosValue: {
+            value: '__лет__месяцев',
+            start: 0
+        },
         setPreviosState: function(){
             var startPos = this.getCarretPosition(this.el).start;
-            this.el.value = this.el.value.substring(0, startPos-1) + this.el.value.substring(startPos, this.el.value.length);
-
+            this.previosValue.value = this.el.value;
+            this.previosValue.start = startPos;
         },
         applyPlaceHolder: function(isMonth, isYear, keyCode){
             var startPos = this.getCarretPosition(this.el).start,
                 that = this;
             //взовращаем строку к первоначальному видо до keyup
+            this.el.value = this.el.value.substring(0, startPos-1) + this.el.value.substring(startPos, this.el.value.length);
             this.setPreviosState();
             this.el.value = this.el.value.replace(/(_)/g, function(month, year, position, text){
                 if(position === 0 && isYear && position === (startPos-1) || 
